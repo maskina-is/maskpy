@@ -4,7 +4,7 @@ from collections import defaultdict
 from .labeled_df import LabeledDataFrame
 
 def read_survey_data(filepath: str) -> pd.DataFrame:
-    return pd.read_csv(filepath, sep=';', encoding='utf-8', quotechar='"')
+    return pd.read_excel(filepath, engine="openpyxl")
 
 def parse_value_labels(txt: str) -> dict:
     value_labels = defaultdict(dict)
