@@ -34,15 +34,15 @@ def parse_variable_labels(txt: str) -> dict:
     return variable_labels
 
  def build_metadata(value_labels: dict, variable_labels: dict) -> dict:
-    metadata = {}
-    all_vars = set(value_labels) | set(variable_labels)
-
-    for var in all_vars:
-        metadata[var] = {
-            "value_labels": value_labels.get(var),
-            "variable_label": variable_labels.get(var)
-        }
-    return metadata
+     metadata = {}
+     all_vars = set(value_labels) | set(variable_labels)
+     
+     for var in all_vars:
+         metadata[var] = {
+             "value_labels": value_labels.get(var),
+             "variable_label": variable_labels.get(var)
+         }
+     return metadata
 
 def read_metadata(filepath: str) -> dict:
     with open(filepath, encoding='utf-8') as f:
