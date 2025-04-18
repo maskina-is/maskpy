@@ -33,7 +33,7 @@ def parse_variable_labels(txt: str) -> dict:
                 variable_labels[var] = label
     return variable_labels
 
- def build_metadata(value_labels: dict, variable_labels: dict) -> dict:
+def build_metadata(value_labels: dict, variable_labels: dict) -> dict:
      metadata = {}
      all_vars = set(value_labels) | set(variable_labels)
      
