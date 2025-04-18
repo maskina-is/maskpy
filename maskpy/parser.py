@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 from collections import defaultdict
-from labeled_df import LabeledDataFrame
+from .labeled_df import LabeledDataFrame
 
 def read_survey_data(filepath: str) -> pd.DataFrame:
     return pd.read_csv(filepath, sep=';', encoding='utf-8', quotechar='"')
