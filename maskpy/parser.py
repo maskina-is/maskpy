@@ -156,15 +156,19 @@ def expand_multiple_response_columns(df: pd.DataFrame, metadata: dict) -> pd.Dat
     for var, info in metadata.items():
         if info["type"] == "multi" and var in df.columns:
             subvars = info["subvars"]
-            max_len = max(subvars.keys())  # e.g., 7 if you have BIL10_1 to BIL10_7
+            max_len = max(subvars.keys())
 
-            # Make sure the string is safe and padded to the full expected length
+            # Prepare binary string column
             binary_series = df[var].fillna("").astype(str).str.pad(max_len, fillchar="0")
 
-            for code, subvar in subvars.items():
-                # Extract the bit (as string), fallback to "0" if out of range
-                df[subvar] = binary_series.str[code - 1].fillna("0").replace(r"[^01]", "0", regex=True).astype(int)
+            # Create all subvar columns at once
+            expanded = {
+                subvars[code]: binary_series.str[code - 1].fillna("0").replace(r"[^01]", "0", regex=True).astype(int)
+                for code in subvars
+            }
 
+            # Add all subvar columns together using concat
+            df = pd.concat([df, pd.DataFrame(expanded, index=df.index)], axis=1)
             df.drop(columns=[var], inplace=True)
 
     return df
