@@ -34,24 +34,50 @@ def parse_variable_labels(txt: str) -> dict:
                 variable_labels[var] = label
     return variable_labels
 
-def build_metadata(value_labels: dict, variable_labels: dict) -> dict:
-     metadata = {}
-     all_vars = set(value_labels) | set(variable_labels)
-     
-     for var in all_vars:
-         metadata[var] = {
-             "value_labels": value_labels.get(var),
-             "variable_label": variable_labels.get(var)
-         }
-     return metadata
+def build_metadata(value_labels: dict, variable_labels: dict, variable_types: dict) -> dict:
+    metadata = {}
+    grouped = defaultdict(dict)
+
+    # Collect subvariables for each multi group
+    for var, (vtype, group) in variable_types.items():
+        if vtype == "multi" and group:
+            # Extract value position from variable name (e.g., BIL10_3 → 3)
+            match = re.search(r"_(\d+)$", var)
+            if match:
+                value_code = int(match.group(1))
+                grouped[group][value_code] = var
+
+    all_vars = set(value_labels) | set(variable_labels) | set(variable_types)
+
+    for var in all_vars:
+        vtype, group = variable_types.get(var, ("single", None))
+
+        # Skip subvars – they'll be represented by the parent multi variable
+        if vtype == "multi" and group and var != group:
+            continue
+
+        entry = {
+            "type": vtype,
+            "variable_label": variable_labels.get(var),
+            "value_labels": value_labels.get(var),
+        }
+
+        if vtype == "multi":
+            entry["subvars"] = grouped.get(var, {})
+
+        metadata[var] = entry
+
+    return metadata
 
 def read_metadata(filepath: str) -> dict:
     with open(filepath, encoding='utf-8') as f:
         txt = f.read()
-    
+
     value_labels = parse_value_labels(txt)
     variable_labels = parse_variable_labels(txt)
-    return build_metadata(value_labels, variable_labels)
+    variable_types = parse_format_blocks(txt)
+
+    return build_metadata(value_labels, variable_labels, variable_types)
 
 def load_labeled_data(data_path: str, metadata_path: str):
     df = read_survey_data(data_path)
