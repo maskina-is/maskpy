@@ -152,10 +152,19 @@ def parse_variable_types(txt: str):
 
 def expand_multiple_response_columns(df: pd.DataFrame, metadata: dict) -> pd.DataFrame:
     df = df.copy()
+
     for var, info in metadata.items():
         if info["type"] == "multi" and var in df.columns:
-            binary_series = df[var].fillna("").astype(str)
-            for code, subvar in info["subvars"].items():
-                df[subvar] = binary_series.str.pad(len(info["subvars"]), fillchar="0").str[code - 1].astype(int)
+            subvars = info["subvars"]
+            max_len = max(subvars.keys())  # e.g., 7 if you have BIL10_1 to BIL10_7
+
+            # Make sure the string is safe and padded to the full expected length
+            binary_series = df[var].fillna("").astype(str).str.pad(max_len, fillchar="0")
+
+            for code, subvar in subvars.items():
+                # Extract the bit (as string), fallback to "0" if out of range
+                df[subvar] = binary_series.str[code - 1].fillna("0").replace(r"[^01]", "0", regex=True).astype(int)
+
             df.drop(columns=[var], inplace=True)
+
     return df
