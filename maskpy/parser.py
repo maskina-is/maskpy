@@ -84,3 +84,22 @@ def load_labeled_data(data_path: str, metadata_path: str):
     metadata = read_metadata(metadata_path)
     return LabeledDataFrame(df, metadata)
 
+def parse_format_blocks(txt: str) -> dict:
+    """
+    Parses format lines like:
+    format BIL10_1 Multi_BIL10.;
+    Returns a dict: {varname: ("multi", "BIL10")} or {varname: ("single", None)}
+    """
+    types = {}
+    for line in txt.splitlines():
+        if line.strip().startswith("format"):
+            parts = line.strip().split()
+            if len(parts) >= 3:
+                var = parts[1]
+                fmt = parts[2].rstrip(".;")
+                if fmt.startswith("Multi_"):
+                    group = fmt.replace("Multi_", "")
+                    types[var] = ("multi", group)
+                else:
+                    types[var] = ("single", None)
+    return types
