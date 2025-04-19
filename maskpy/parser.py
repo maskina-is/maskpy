@@ -102,7 +102,7 @@ def read_metadata(filepath: str):
 def load_labeled_data(data_path: str, metadata_path: str):
     df = read_survey_data(data_path)
     metadata = read_metadata(metadata_path)
-    df = expand_multiple_response_columns(data, metadata)
+    df = expand_multiple_response_columns(df, metadata)
     return LabeledDataFrame(df, metadata)
 
 def parse_format_blocks(txt: str) -> dict:
